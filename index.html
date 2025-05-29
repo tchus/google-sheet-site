@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Données Google Sheet</title>
+  <script src="https://unpkg.com/tabletop@1.6.0/tabletop.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 2rem;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 0.75rem;
+      text-align: left;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+    tr:nth-child(even) {
+      background-color: #fafafa;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Données du Google Sheet</h1>
+  <div id="table-container"></div>
+
+  <script>
+    function showData(data, tabletop) {
+      const container = document.getElementById('table-container');
+      const keys = Object.keys(data[0]);
+      let html = '<table><thead><tr>';
+      keys.forEach(key => html += `<th>${key}</th>`);
+      html += '</tr></thead><tbody>';
+      data.forEach(row => {
+        html += '<tr>';
+        keys.forEach(key => {
+          html += `<td>${row[key]}</td>`;
+        });
+        html += '</tr>';
+      });
+      html += '</tbody></table>';
+      container.innerHTML = html;
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      Tabletop.init({
+        key: '1YgchvKZG-tKDW4rqQrNG0yNsjFL1oWCUJcpY499qaJ4',
+        callback: showData,
+        simpleSheet: true
+      });
+    });
+  </script>
+
+</body>
+</html>
