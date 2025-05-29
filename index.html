@@ -50,17 +50,17 @@
       return json.table;
     }
 
-    function parseTableToObjects(table, sheetName) {
-      const cols = table.cols.map(col => col.label || "Colonne");
+      function parseTableToObjects(table, headerLabels, sheetName) {
       return table.rows.map(row => {
-        const obj = {};
-        cols.forEach((col, idx) => {
-          obj[col] = row.c[idx] ? row.c[idx].v : "";
-        });
-        obj["Onglet"] = sheetName;
-        return obj;
+      const obj = {};
+      headerLabels.forEach((label, idx) => {
+      obj[label] = row.c[idx] ? row.c[idx].v : "";
       });
-    }
+      obj["Onglet"] = sheetName;
+      return obj;
+    });
+   }
+
 
     function generateHTMLTable(data) {
       const container = document.getElementById("table-container");
@@ -84,23 +84,32 @@
       container.innerHTML = html;
     }
 
-    async function loadAllSheets() {
-      const allData = [];
-      const loading = document.getElementById("loading");
+async function loadAllSheets() {
+  const allData = [];
+  const loading = document.getElementById("loading");
 
-      for (const name of sheetNames) {
-        try {
-          const table = await fetchSheetData(name);
-          const parsed = parseTableToObjects(table, name);
-          allData.push(...parsed);
-        } catch (e) {
-          console.warn(`Erreur avec l'onglet "${name}":`, e.message);
-        }
+  let referenceHeaders = [];
+
+  for (const [index, name] of sheetNames.entries()) {
+    try {
+      const table = await fetchSheetData(name);
+
+      // Utiliser les en-têtes de l’onglet A comme référence
+      if (index === 0) {
+        referenceHeaders = table.cols.map(col => col.label || "Colonne");
       }
 
-      loading.remove();
-      generateHTMLTable(allData);
+      const parsed = parseTableToObjects(table, referenceHeaders, name);
+      allData.push(...parsed);
+    } catch (e) {
+      console.warn(`Erreur avec l'onglet "${name}":`, e.message);
     }
+  }
+
+  loading.remove();
+  generateHTMLTable(allData);
+}
+
 
     loadAllSheets();
   </script>
