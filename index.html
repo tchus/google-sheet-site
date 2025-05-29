@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Tableau - Onglet A</title>
+  <title>Données - Onglet A</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -49,8 +49,7 @@
 
     function generateTable(table) {
       const container = document.getElementById("table-container");
-      const loading = document.getElementById("loading");
-      loading.remove();
+      document.getElementById("loading").remove();
 
       const headers = table.cols.map(col => col.label || "Colonne");
       let html = "<table><thead><tr>";
