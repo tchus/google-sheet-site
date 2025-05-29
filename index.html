@@ -2,16 +2,19 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Feuille Google Fusionnée</title>
+  <title>Tableau - Onglet A</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       margin: 2rem;
     }
+    h1 {
+      text-align: center;
+    }
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-bottom: 2rem;
+      margin-top: 2rem;
     }
     th, td {
       border: 1px solid #ddd;
@@ -28,21 +31,15 @@
 </head>
 <body>
 
-  <h1>Données combinées de tous les onglets</h1>
+  <h1>Données de l'onglet A</h1>
   <div id="loading">Chargement en cours...</div>
   <div id="table-container"></div>
 
   <script>
     const sheetId = '1YgchvKZG-tKDW4rqQrNG0yNsjFL1oWCUJcpY499qaJ4';
+    const sheetName = 'A';
 
-    const sheetNames = [
-      "A", "B", "C", "D", "E", "F", "G", "H", "I", "J",
-      "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T",
-      "U", "V", "W", "X", "Y", "Z", "Various", 
-      "Others", "Unknown"
-    ];
-
-    async function fetchSheetData(sheetName) {
+    async function fetchSheetData() {
       const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${sheetName}`;
       const response = await fetch(url);
       const text = await response.text();
@@ -50,33 +47,21 @@
       return json.table;
     }
 
-      function parseTableToObjects(table, headerLabels, sheetName) {
-      return table.rows.map(row => {
-      const obj = {};
-      headerLabels.forEach((label, idx) => {
-      obj[label] = row.c[idx] ? row.c[idx].v : "";
-      });
-      obj["Onglet"] = sheetName;
-      return obj;
-    });
-   }
-
-
-    function generateHTMLTable(data) {
+    function generateTable(table) {
       const container = document.getElementById("table-container");
-      if (data.length === 0) {
-        container.innerHTML = "<p>Aucune donnée trouvée.</p>";
-        return;
-      }
+      const loading = document.getElementById("loading");
+      loading.remove();
 
-      const keys = Object.keys(data[0]);
+      const headers = table.cols.map(col => col.label || "Colonne");
       let html = "<table><thead><tr>";
-      keys.forEach(key => html += `<th>${key}</th>`);
+      headers.forEach(h => html += `<th>${h}</th>`);
       html += "</tr></thead><tbody>";
 
-      data.forEach(row => {
+      table.rows.forEach(row => {
         html += "<tr>";
-        keys.forEach(key => html += `<td>${row[key]}</td>`);
+        row.c.forEach(cell => {
+          html += `<td>${cell ? cell.v : ""}</td>`;
+        });
         html += "</tr>";
       });
 
@@ -84,36 +69,11 @@
       container.innerHTML = html;
     }
 
-async function loadAllSheets() {
-  const allData = [];
-  const loading = document.getElementById("loading");
-
-  let referenceHeaders = [];
-
-  for (const [index, name] of sheetNames.entries()) {
-    try {
-      const table = await fetchSheetData(name);
-
-      // Utiliser les en-têtes de l’onglet A comme référence
-      if (index === 0) {
-        referenceHeaders = table.cols.map(col => col.label || "Colonne");
-      }
-
-      const parsed = parseTableToObjects(table, referenceHeaders, name);
-      allData.push(...parsed);
-    } catch (e) {
-      console.warn(`Erreur avec l'onglet "${name}":`, e.message);
-    }
-  }
-
-  loading.remove();
-  generateHTMLTable(allData);
-}
-
-
-    loadAllSheets();
+    fetchSheetData().then(generateTable).catch(err => {
+      document.getElementById("loading").innerText = "Erreur de chargement.";
+      console.error(err);
+    });
   </script>
 
 </body>
 </html>
-
